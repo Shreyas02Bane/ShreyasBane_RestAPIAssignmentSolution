@@ -1,29 +1,29 @@
 package com.greatlearning.empMng.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import com.greatlearning.empMng.entity.Employee;
-import com.greatlearning.empMng.entity.Roles;
-import com.greatlearning.empMng.entity.User;
 
 public interface IEmployeeService {
-	public List<Employee> findAll();
 
-	public Optional<Employee> findById(int theId);
+	// Save operation
+	Employee saveEmployee(Employee employee);
 
-	public String save(Employee theEmployee);
+	// Read operation
+	List<Employee> fetchEmployeeList();
 
-	public String updateEmployee(Employee theEmployee);
+	// Update operation
+	Employee updateEmployee(Employee employee, Integer Id);
 
-	public String deleteById(int theId);
+	// Delete operation
+	void deleteEmployeeById(Integer Id);
 
-	public List<Employee> searchByFirstName(String firstName);
+	// Employee search by ID
+	Employee fetchEmployeeById(Integer Id);
 
-	public List<Employee> sortByFirstName(String sortBy);
+	// Employee search by First Name
+	List<Employee> fetchEmployeeListByFirstName(String FristName);
 
-	public User saveUser(User user);
-
-	public Roles saveRole(Roles role);
-
+	// Employee Record Sorting by First Name
+	List<Employee> fetchEmployeeListSorted(String order);
 }

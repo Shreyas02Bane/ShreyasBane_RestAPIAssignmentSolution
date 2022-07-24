@@ -1,18 +1,22 @@
 package com.greatlearning.empMng.service;
 
 import java.util.List;
-import java.util.Optional;
 
-import com.greatlearning.empMng.entity.Roles;
+import com.greatlearning.empMng.entity.Role;
+
 
 public interface IRoleService {
-	public List<Roles> findAll();
 
-	public Optional<Roles> findById(int theId);
-
-	public void save(Roles theRole);
-
-	public void deleteById(int theId);
-
-	public Optional<Roles> findByName(String name);
+	// Save operation Create
+    Role saveRole(Role role);
+ 
+    // Read operation
+    List<Role> fetchRoleList();
+ 
+    // Update operation
+    Role updateRole(Role role,Integer Id);
+ 
+    // Delete operation
+    void deleteRoleById(Integer Id);
+	
 }

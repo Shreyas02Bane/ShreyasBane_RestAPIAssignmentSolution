@@ -1,8 +1,7 @@
 package com.greatlearning.empMng.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import java.util.HashSet;
+import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,14 +13,24 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "users")
+@Table(name = "user")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+
 public class User {
+
 	@Id
-	@Column(name = "user_id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
+	@Column(name = "user_id")
+	private Integer id;
 
 	@Column(name = "username")
 	private String username;
@@ -29,15 +38,22 @@ public class User {
 	@Column(name = "password")
 	private String password;
 
-	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	@JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-	private List<Roles> listOfRoles = new ArrayList<Roles>();
+	@Column(name = "passwordHint")
+	private String passwordHint;
 
-	public int getId() {
+	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+	private Set<Role> roles = new HashSet<>();
+
+	public void addRole(Role role) {
+		this.roles.add(role);
+	}
+
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 
@@ -49,6 +65,22 @@ public class User {
 		this.username = username;
 	}
 
+	public String getPasswordHint() {
+		return passwordHint;
+	}
+
+	public void setPasswordHint(String passwordHint) {
+		this.passwordHint = passwordHint;
+	}
+
+	public Set<Role> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Set<Role> roles) {
+		this.roles = roles;
+	}
+
 	public String getPassword() {
 		return password;
 	}
@@ -56,13 +88,8 @@ public class User {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-
-	public List<Roles> getListOfRoles() {
-		return listOfRoles;
-	}
-
-	public void setListOfRoles(List<Roles> listOfRoles) {
-		this.listOfRoles = listOfRoles;
-	}
+	
+	
+	
 
 }

@@ -7,26 +7,38 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 @Entity
 @Table(name = "employee")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class Employee {
-	// define fields
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+	@Column
+	private int id;
 
-	@Column(name = "first_name")
+	@Column(name = "firstName")
 	private String firstName;
-	@Column(name = "last_name")
+
+	@Column(name = "lastName")
 	private String lastName;
+
 	@Column(name = "email")
 	private String email;
 
-	public Integer getId() {
+	public int getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 
@@ -54,9 +66,6 @@ public class Employee {
 		this.email = email;
 	}
 
-	@Override
-	public String toString() {
-		return "Employee [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", email=" + email + "]";
-	}
-
+	
+	
 }

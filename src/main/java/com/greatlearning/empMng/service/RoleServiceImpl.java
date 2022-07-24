@@ -1,51 +1,56 @@
 package com.greatlearning.empMng.service;
 
 import java.util.List;
-import java.util.Optional;
-
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.greatlearning.empMng.entity.Roles;
-import com.greatlearning.empMng.repos.IRoleRepository;
-
+import com.greatlearning.empMng.entity.Role;
+import com.greatlearning.empMng.repos.IRolesRepository;
 
 @Service
 public class RoleServiceImpl implements IRoleService {
 
 	@Autowired
-	IRoleRepository roleRepository;
+	private IRolesRepository roleRepository;
+
+	// Save or Create operation
 
 	@Override
-	@Transactional
-	public List<Roles> findAll() {
-		List<Roles> roles = roleRepository.findAll();
-		return roles;
+	public Role saveRole(Role role) {
+
+		return roleRepository.save(role);
 	}
 
-	@Override
-	@Transactional
-	public Optional<Roles> findById(int theId) {
-		return roleRepository.findById(theId);
-	}
+	// Read operation
 
 	@Override
-	@Transactional
-	public void save(Roles theRole) {
-		roleRepository.save(theRole);
+	public List<Role> fetchRoleList() {
+
+		return (List<Role>) roleRepository.findAll();
 	}
 
-	@Override
-	@Transactional
-	public void deleteById(int theId) {
-		roleRepository.deleteById(theId);
-	}
+	// Update Operation
 
 	@Override
-	public Optional<Roles> findByName(String name) {
-		// TODO Auto-generated method stub
-		return null;
+	public Role updateRole(Role role, Integer Id) {
+
+		Role roleDB = roleRepository.findById(Id).get();
+
+		if (Objects.nonNull(role.getName()) && !"".equalsIgnoreCase(role.getName())) {
+			roleDB.setName(role.getName());
+		}
+
+		return roleRepository.save(roleDB);
+	}
+
+	// Delete Operation
+
+	@Override
+	public void deleteRoleById(Integer Id) {
+
+		roleRepository.deleteById(Id);
+
 	}
 
 }

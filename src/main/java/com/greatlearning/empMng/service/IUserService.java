@@ -1,18 +1,24 @@
 package com.greatlearning.empMng.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import com.greatlearning.empMng.entity.User;
 
 public interface IUserService {
-	public List<User> findAll();
 
-	public Optional<User> findById(long theId);
+	// Save operation
+	User saveUser(User user);
 
-	public void save(User theUser);
+	// Read operation
+	List<User> fetchUserList();
 
-	public void deleteById(long theId);
+	// Update operation
+	User updateUser(User user, Integer userId);
 
-	public Optional<User> findByUserName(String userName);
-}
+	// Delete operation
+	void deleteUserById(Integer userId);
+
+	User getUser(Integer Id);
+	
+	}
+

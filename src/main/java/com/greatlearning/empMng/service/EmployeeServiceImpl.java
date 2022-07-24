@@ -1,124 +1,83 @@
 package com.greatlearning.empMng.service;
 
 import java.util.List;
-import java.util.Optional;
-
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.greatlearning.empMng.entity.Employee;
-import com.greatlearning.empMng.entity.Roles;
-import com.greatlearning.empMng.entity.User;
 import com.greatlearning.empMng.repos.IEmployeeRepository;
-import com.greatlearning.empMng.repos.IRoleRepository;
-import com.greatlearning.empMng.repos.IUserRepository;
 
 @Service
 public class EmployeeServiceImpl implements IEmployeeService {
 
 	@Autowired
 	private IEmployeeRepository employeeRepository;
-	@Autowired
-	IRoleRepository roleRepository;
-	@Autowired
-	IUserRepository userRepository;
-	@Autowired
-	BCryptPasswordEncoder bcryptEncoder;
 
+	// Save operation
 	@Override
-	public List<Employee> findAll() {
+	public Employee saveEmployee(Employee employee) {
 
-		return employeeRepository.findAll();
+		return employeeRepository.save(employee);
 	}
 
+	// Read operation
 	@Override
-	public Optional<Employee> findById(int theId) {
-		boolean ifEmployeeExist = employeeRepository.existsById(theId);
-		if (ifEmployeeExist) {
-			return employeeRepository.findById(theId);
+	public List<Employee> fetchEmployeeList() {
 
-		} else
-			throw new RuntimeException("There is no employee exist with id : " + theId);
-
+		return (List<Employee>) employeeRepository.findAll();
 	}
 
+	// Update operation
 	@Override
-	public String save(Employee theEmployee) {
+	public Employee updateEmployee(Employee employee, Integer Id) {
 
-		if (theEmployee.getFirstName().equals("") || theEmployee.getLastName().equals("")
-				|| theEmployee.getEmail().equals("")) {
-			throw new RuntimeException("Error!!!All fields are mandatory ");
-
-		} else {
-			employeeRepository.saveAndFlush(theEmployee);
-			return "Employee Added Successfully!\nAdded Employee Details is :\nid : " + theEmployee.getId()
-					+ "\nFirst Name : " + theEmployee.getFirstName() + "\nLast Name : " + theEmployee.getLastName()
-					+ "\nEmail : " + theEmployee.getEmail();
-		}
-	}
-
-	@Override
-	public String updateEmployee(Employee employee) {
-		boolean ifEmployeeExist = employeeRepository.existsById(employee.getId());
-
-		if (ifEmployeeExist) {
-			employeeRepository.saveAndFlush(employee);
-			return "Employee Updated Successfully!\nUpdated Employee Details is :\nid : " + employee.getId()
-					+ "\nFirst Name : " + employee.getFirstName() + "\nLast Name : " + employee.getLastName()
-					+ "\nEmail : " + employee.getEmail();
-		} else {
-			return "There is no employee exist with id : " + employee.getId();
-
+		Employee employeeDB = employeeRepository.findById(Id).get();
+		if (Objects.nonNull(employee.getFirstName()) && !"".equalsIgnoreCase(employee.getLastName())) {
+			employeeDB.setFirstName(employee.getFirstName());
+			employeeDB.setLastName(employee.getLastName());
+			employeeDB.setEmail(employee.getEmail());
 		}
 
+		return employeeRepository.save(employeeDB);
 	}
 
+	// Delete operation by ID
 	@Override
-	public String deleteById(int theId) {
+	public void deleteEmployeeById(Integer Id) {
+		employeeRepository.deleteById(Id);
 
-		boolean ifEmployeeExist = employeeRepository.existsById(theId);
-
-		if (ifEmployeeExist) {
-			employeeRepository.deleteById(theId);
-			return "Deleted employee id -" + theId;
-		} else
-			return "There is no employee exist with id : " + theId;
 	}
 
+	// Employee search by ID
 	@Override
-	public List<Employee> searchByFirstName(String firstName) {
-		List<Employee> employees = employeeRepository.findByFirstNameContainsAllIgnoreCase(firstName);
-		if (employees.size() > 0)
-			return employees;
-		else
-			throw new RuntimeException("No employee data found!!!");
+	public Employee fetchEmployeeById(Integer Id) {
+
+		return employeeRepository.findById(Id).get();
 	}
 
+	// Employee search by First Name
 	@Override
-	public List<Employee> sortByFirstName(String sortBy) {
+	public List<Employee> fetchEmployeeListByFirstName(String FirstName) {
 
-		List<Employee> employees = employeeRepository.findAll(Sort.by(Direction.fromString(sortBy), "firstName"));
-		if (employees.size() > 0)
-
-			return employees;
-		else
-			throw new RuntimeException("No employee data found!!!");
+		return employeeRepository.getEmployeeByFirstName(FirstName);
 	}
 
+	// Employee Record Sorting by First Name
 	@Override
-	public User saveUser(User user) {
+	public List<Employee> fetchEmployeeListSorted(String order) {
 
-		user.setPassword(bcryptEncoder.encode(user.getPassword()));
-		return userRepository.save(user);
-	}
+		if (order.equals("asc")) {
 
-	@Override
-	public Roles saveRole(Roles role) {
+			return (List<Employee>) employeeRepository.findAll(Sort.by("firstName").ascending());
 
-		return roleRepository.save(role);
+		}
+		if (order.equals("desc")) {
+
+			return (List<Employee>) employeeRepository.findAll(Sort.by("firstName").descending());
+		}
+		return null;
 	}
 
 }

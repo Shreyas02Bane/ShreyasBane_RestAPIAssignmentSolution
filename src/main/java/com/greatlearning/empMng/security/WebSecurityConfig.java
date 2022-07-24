@@ -1,69 +1,89 @@
 package com.greatlearning.empMng.security;
 
+import java.time.LocalDateTime;
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.json.JSONObject;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 
 import com.greatlearning.empMng.service.UserDetailsServiceImpl;
 
 @Configuration
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
 	@Bean
-	public UserDetailsService getMyUserDetailsService() {
+	public UserDetailsService userDetailsService() {
 		return new UserDetailsServiceImpl();
 	}
 
-	@Bean
-	public BCryptPasswordEncoder getPassWordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+    @Bean
+    BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-	@Bean
-	public AuthenticationManager authenticationManagerBean() throws Exception {
-		return super.authenticationManagerBean();
-	}
+    @Bean
+    DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService());
+        authProvider.setPasswordEncoder(passwordEncoder());
+
+        return authProvider;
+    }
 
 	@Override
-	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.userDetailsService(getMyUserDetailsService()).passwordEncoder(getPassWordEncoder());
+	protected void configure(AuthenticationManagerBuilder builder) throws Exception {
+		builder.authenticationProvider(authenticationProvider());
+		builder.inMemoryAuthentication().withUser("user").password("pass").roles("USER").and().withUser("admin")
+				.password("admin").roles("ADMIN").and().passwordEncoder(NoOpPasswordEncoder.getInstance());
+
 	}
 
-	@Bean
-	public DaoAuthenticationProvider authenticationProvider() {
-		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-
-		authProvider.setUserDetailsService(getMyUserDetailsService());
-		authProvider.setPasswordEncoder(getPassWordEncoder());
-
-		return authProvider;
-	}
-
-	/* To ignore security layer for mentioned parts */
 	@Override
 	public void configure(WebSecurity web) throws Exception {
-
-		web.ignoring().antMatchers("/h2-console/**");
+		web.ignoring().antMatchers(HttpMethod.OPTIONS, "/v2/api-docs", "/configuration/ui", "/swagger-resources/**",
+				"/configuration/security", "/swagger-ui.html", "/webjars/**");
 	}
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.authorizeRequests().antMatchers("/login").permitAll()
-				.antMatchers(HttpMethod.POST, "/api/user", "/api/role").hasAuthority("ADMIN")
-				.antMatchers(HttpMethod.GET, "/api/employees/employeesList", "/api/employees/{employee_id}")
-				.hasAnyAuthority("USER", "ADMIN").antMatchers(HttpMethod.POST, "/api/employees/add")
-				.hasAuthority("ADMIN").antMatchers(HttpMethod.PUT, "/api/employees/update").hasAuthority("ADMIN")
-				.antMatchers(HttpMethod.DELETE, "/api/employees/delete/*").hasAuthority("ADMIN")
-				.antMatchers(HttpMethod.GET, "/api/employees/search/*", "/api/employees/sort/*")
-				.hasAnyAuthority("USER", "ADMIN").antMatchers("/swagger-ui.html").hasAuthority("ADMIN").anyRequest()
-				.authenticated().and().httpBasic().and().formLogin().and().logout().logoutSuccessUrl("/login")
-				.permitAll().and().cors().and().csrf().disable();
+
+		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+		http.authorizeRequests()
+		        .antMatchers(HttpMethod.DELETE, "/api/employee/{Id}", "/api/user/{ID}")
+				.hasAuthority("ROLE_ADMIN")
+				.antMatchers(HttpMethod.PUT, "/api/employee/{Id}", "/api/user/{Id}")
+				.hasAuthority("ROLE_ADMIN")
+				.antMatchers(HttpMethod.POST, "/api/employee", "/api/user")
+				.hasAuthority("ROLE_ADMIN")
+				.antMatchers(HttpMethod.POST, "/api/user")
+				.hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
+				.antMatchers(HttpMethod.GET, "/api/employee/", "/api/user/", "/api/role/", "/employee/sort","/employee/search/{FirstName}", "/api/employee/{Id}")
+				.hasAnyRole("ADMIN", "USER")
+				.anyRequest().authenticated()
+				.and().exceptionHandling()
+				.accessDeniedHandler((request, response, e) -> {
+					response.setContentType("application/json;charset=UTF-8");
+					response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+					response.getWriter().write(new JSONObject().put("timestamp", LocalDateTime.now())
+							.put("message", "Access denied Login with Admin Role").toString());
+				})
+				.and()
+				.httpBasic().and().cors().and().csrf().disable();
+
+		http.headers().frameOptions().disable();
+
 	}
 }
